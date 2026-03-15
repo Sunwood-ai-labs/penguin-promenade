@@ -1,6 +1,7 @@
 # Penguin Promenade
 
 Side-scrolling city stroll built from animated penguin WebP clips and a skyline background.
+This is an experimental game app created in a CLI-first workflow with Godot and the Codex App.
 
 ## How To Play
 
