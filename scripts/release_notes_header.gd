@@ -2,8 +2,9 @@ extends Control
 
 const VIEWPORT_SIZE := Vector2(1360.0, 768.0)
 const BACKDROP_SCENE := preload("res://scenes/main.tscn")
+const REPO_NAME_TEXT := "penguin-promenade"
 const TITLE_TEXT := "Penguin Promenade"
-const EYEBROW_TEXT := "Release Notes Header"
+const EYEBROW_TEXT := "Release Notes"
 const VERSION_TEXT := "v0.1.0"
 const TAGLINE_TEXT := "CLI-first city stroll built in Godot with animated penguin WebP characters."
 const DETAIL_TEXT := "First public release with the promenade loop, ambient town residents, and reproducible docs plus smoke-test tooling."
@@ -50,9 +51,30 @@ func _build_scene() -> void:
 	tint.color = Color("07111bcf")
 	add_child(tint)
 
+	var version_panel := PanelContainer.new()
+	version_panel.position = Vector2(780.0, 74.0)
+	version_panel.size = Vector2(420.0, 168.0)
+	version_panel.add_theme_stylebox_override("panel", _style_box(Color("2d2110d6"), Color("f2d27c"), 34))
+	add_child(version_panel)
+
+	var version_margin := MarginContainer.new()
+	version_margin.set_anchors_preset(Control.PRESET_FULL_RECT)
+	version_margin.add_theme_constant_override("margin_left", 26)
+	version_margin.add_theme_constant_override("margin_top", 16)
+	version_margin.add_theme_constant_override("margin_right", 26)
+	version_margin.add_theme_constant_override("margin_bottom", 10)
+	version_panel.add_child(version_margin)
+
+	var version_label := _make_label(VERSION_TEXT, 112, Color("fff1b5"))
+	version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	version_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	version_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	version_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	version_margin.add_child(version_label)
+
 	var glow := Panel.new()
-	glow.position = Vector2(720.0, 84.0)
-	glow.size = Vector2(540.0, 572.0)
+	glow.position = Vector2(732.0, 266.0)
+	glow.size = Vector2(528.0, 392.0)
 	glow.add_theme_stylebox_override("panel", _style_box(Color("10233d7c"), Color("54b6ff44"), 28))
 	add_child(glow)
 
@@ -98,7 +120,7 @@ func _build_scene() -> void:
 
 	var card := PanelContainer.new()
 	card.position = Vector2(56.0, 54.0)
-	card.size = Vector2(610.0, 620.0)
+	card.size = Vector2(638.0, 634.0)
 	card.add_theme_stylebox_override("panel", _style_box(Color("07111ce6"), Color("7dd3fc4d"), 32))
 	add_child(card)
 
@@ -121,13 +143,17 @@ func _build_scene() -> void:
 	layout.add_child(badge_row)
 
 	badge_row.add_child(_badge(EYEBROW_TEXT, Color("8be9fd"), Color("0f2f42")))
-	badge_row.add_child(_badge(VERSION_TEXT, Color("fde68a"), Color("49340f")))
+	badge_row.add_child(_badge("First Public Drop", Color("fde68a"), Color("49340f")))
 
-	var title := _make_label(TITLE_TEXT, 54, Color("fff8dc"))
+	var repo_name := _make_label(REPO_NAME_TEXT, 56, Color("8be9fd"))
+	repo_name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	layout.add_child(repo_name)
+
+	var title := _make_label(TITLE_TEXT, 30, Color("fff8dc"))
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	layout.add_child(title)
 
-	var subtitle := _make_label(TAGLINE_TEXT, 24, Color("dbeafe"))
+	var subtitle := _make_label(TAGLINE_TEXT, 22, Color("dbeafe"))
 	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	layout.add_child(subtitle)
 
@@ -136,7 +162,7 @@ func _build_scene() -> void:
 	layout.add_child(detail)
 
 	var feature_column := VBoxContainer.new()
-	feature_column.add_theme_constant_override("separation", 12)
+	feature_column.add_theme_constant_override("separation", 10)
 	layout.add_child(feature_column)
 
 	for feature in FEATURE_ITEMS:
@@ -144,10 +170,6 @@ func _build_scene() -> void:
 
 	var footer := _make_label("Rendered in Godot for the v0.1.0 release notes image.", 16, Color("93c5fd"))
 	layout.add_child(footer)
-
-	var kicker := _make_label("Sunset avenue. Small town penguins. First public drop.", 18, Color("fde68a"))
-	kicker.position = Vector2(742.0, 84.0)
-	add_child(kicker)
 
 
 func _configure_backdrop() -> void:
@@ -202,7 +224,7 @@ func _badge(text: String, text_color: Color, fill_color: Color) -> PanelContaine
 
 func _feature_card(title: String, body: String, accent: Color) -> PanelContainer:
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(0.0, 108.0)
+	panel.custom_minimum_size = Vector2(0.0, 98.0)
 	panel.add_theme_stylebox_override("panel", _style_box(Color("0d1828f0"), accent.darkened(0.25), 22))
 
 	var margin := MarginContainer.new()
@@ -217,7 +239,7 @@ func _feature_card(title: String, body: String, accent: Color) -> PanelContainer
 	column.add_theme_constant_override("separation", 6)
 	margin.add_child(column)
 
-	column.add_child(_make_label(title, 24, accent.lightened(0.12)))
+	column.add_child(_make_label(title, 22, accent.lightened(0.12)))
 
 	var body_label := _make_label(body, 16, Color("d9e5f4"))
 	body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
