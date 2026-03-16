@@ -9,6 +9,11 @@ func _initialize() -> void:
 
 	_save_viewport_png("res://.tools/preview_title.png")
 
+	var first_npc: Dictionary = main.npc_data[0]
+	main.move_player_to(float(first_npc["x"]))
+	await process_frame
+	_save_viewport_png("res://.tools/preview_npc.png")
+
 	main.set_move_input(1.0)
 	for _i in range(18):
 		main.simulate(1.0 / 30.0)

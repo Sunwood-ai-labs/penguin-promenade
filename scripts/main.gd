@@ -21,6 +21,9 @@ const WALK_ANIMATION_FPS := 7.0
 const IDLE_ANIMATION_FPS := 4.0
 const LOOK_ANIMATION_FPS := 4.5
 const WAVE_ANIMATION_FPS := 5.5
+const NPC_ANIMATION_FPS := 4.6
+const NPC_INTEREST_RADIUS := 170.0
+const NPC_REFERENCE_CONTENT_HEIGHT := 188.0
 const PLAYER_STATE_METRICS := {
 	"walk": {
 		"frame_width": 560.0,
@@ -55,6 +58,56 @@ const PLAYER_STATE_METRICS := {
 		"content_height": 142.0,
 	},
 }
+const NPC_TILE_METRICS := {
+	"tile_01": {
+		"frame_width": 186.0,
+		"frame_height": 186.0,
+		"content_left": 43.0,
+		"content_right": 161.0,
+		"content_bottom": 164.0,
+		"content_height": 140.0,
+	},
+	"tile_02": {
+		"frame_width": 187.0,
+		"frame_height": 186.0,
+		"content_left": 28.0,
+		"content_right": 156.0,
+		"content_bottom": 165.0,
+		"content_height": 149.0,
+	},
+	"tile_03": {
+		"frame_width": 187.0,
+		"frame_height": 186.0,
+		"content_left": 31.0,
+		"content_right": 143.0,
+		"content_bottom": 162.0,
+		"content_height": 138.0,
+	},
+	"tile_04": {
+		"frame_width": 186.0,
+		"frame_height": 187.0,
+		"content_left": 27.0,
+		"content_right": 160.0,
+		"content_bottom": 161.0,
+		"content_height": 146.0,
+	},
+	"tile_06": {
+		"frame_width": 187.0,
+		"frame_height": 187.0,
+		"content_left": 20.0,
+		"content_right": 162.0,
+		"content_bottom": 150.0,
+		"content_height": 91.0,
+	},
+	"tile_07": {
+		"frame_width": 186.0,
+		"frame_height": 187.0,
+		"content_left": 31.0,
+		"content_right": 166.0,
+		"content_bottom": 163.0,
+		"content_height": 143.0,
+	},
+}
 const SPOT_DEFINITIONS := [
 	{
 		"id": "cafe",
@@ -81,18 +134,89 @@ const SPOT_DEFINITIONS := [
 		"message": "The tower keeps watch over the street. This stretch of the city feels calm and open.",
 	},
 ]
+const NPC_DEFINITIONS := [
+	{
+		"id": "courier",
+		"label": "Miro Courier",
+		"tile": "tile_02",
+		"world_ratio": 0.12,
+		"feet_offset": 0.0,
+		"color": "93c5fd",
+		"facing": 1,
+		"scale": 1.0,
+		"description": "A courier waddles past with a satchel full of tiny letters.",
+	},
+	{
+		"id": "watcher",
+		"label": "Lantern Watch",
+		"tile": "tile_01",
+		"world_ratio": 0.24,
+		"feet_offset": -2.0,
+		"color": "fca5a5",
+		"facing": -1,
+		"scale": 1.0,
+		"description": "The lantern keeper watches the sidewalk like a calm night guard.",
+	},
+	{
+		"id": "bench",
+		"label": "Bench Friend",
+		"tile": "tile_03",
+		"world_ratio": 0.36,
+		"feet_offset": 2.0,
+		"color": "fde68a",
+		"facing": 1,
+		"scale": 0.94,
+		"description": "A sleepy local sits low to the ground and soaks in the sunset.",
+	},
+	{
+		"id": "tinkerer",
+		"label": "Street Tinkerer",
+		"tile": "tile_04",
+		"world_ratio": 0.53,
+		"feet_offset": 0.0,
+		"color": "86efac",
+		"facing": -1,
+		"scale": 0.98,
+		"description": "A tinkerer hunches over a gadget beside the crosswalk.",
+	},
+	{
+		"id": "napper",
+		"label": "Nap Penguin",
+		"tile": "tile_06",
+		"world_ratio": 0.69,
+		"feet_offset": 6.0,
+		"color": "c4b5fd",
+		"facing": -1,
+		"scale": 0.92,
+		"description": "A napper has claimed the warm pavement for an afternoon break.",
+	},
+	{
+		"id": "skater",
+		"label": "Skater",
+		"tile": "tile_07",
+		"world_ratio": 0.86,
+		"feet_offset": -3.0,
+		"color": "67e8f9",
+		"facing": 1,
+		"scale": 1.02,
+		"description": "A skater shows off a looping kick move under the clock tower.",
+	},
+]
 
 var player_animation_sets: Dictionary = {}
 var player_state_scales: Dictionary = {}
 var player_state_y_offsets: Dictionary = {}
 var player_state_x_offsets: Dictionary = {}
+var npc_animation_sets: Dictionary = {}
 var background_texture: Texture2D
 var background_span := 0.0
 var world_width := VIEW_WIDTH
 var background_sprites: Array[Sprite2D] = []
 var spot_data: Array[Dictionary] = []
+var npc_data: Array[Dictionary] = []
 
 var world_layer: Node2D
+var npc_layer: Node2D
 var player_root: Node2D
 var player_sprite: AnimatedSprite2D
 var hud_root: Control
@@ -128,6 +252,7 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	_draw_ground()
+	_draw_npc_labels()
 	_draw_spot_markers()
 
 
@@ -194,6 +319,17 @@ func get_visited_spot_count() -> int:
 	return visited_spots.size()
 
 
+func get_nearest_npc() -> Dictionary:
+	var nearest: Dictionary = {}
+	var nearest_distance := NPC_INTEREST_RADIUS
+	for npc in npc_data:
+		var distance := absf(float(npc["x"]) - player_world_x)
+		if distance <= nearest_distance:
+			nearest_distance = distance
+			nearest = npc
+	return nearest
+
+
 func get_closest_spot(prefer_unvisited: bool = false) -> Dictionary:
 	var nearest: Dictionary = {}
 	var nearest_distance := INF
@@ -240,6 +376,12 @@ func _load_assets() -> void:
 	_register_player_state("look", "%s/tile_08" % FRAME_ROOT, LOOK_ANIMATION_FPS)
 	_register_player_state("wave", "%s/tile_05" % FRAME_ROOT, WAVE_ANIMATION_FPS)
 
+	npc_animation_sets.clear()
+	for npc_definition in NPC_DEFINITIONS:
+		var tile_name := String(npc_definition["tile"])
+		if not npc_animation_sets.has(tile_name):
+			npc_animation_sets[tile_name] = _build_sprite_frames_from_dir("%s/%s" % [FRAME_ROOT, tile_name], NPC_ANIMATION_FPS)
+
 
 func _build_scene() -> void:
 	for child in get_children():
@@ -249,6 +391,9 @@ func _build_scene() -> void:
 	add_child(world_layer)
 
 	_build_background()
+	npc_layer = Node2D.new()
+	world_layer.add_child(npc_layer)
+	_build_npcs()
 	_build_spots()
 
 	player_root = Node2D.new()
@@ -356,6 +501,36 @@ func _draw_ground() -> void:
 		draw_rect(Rect2(start_x + total * index, dash_y, dash_width, 10.0), Color("fff1a8"), true)
 
 
+func _draw_npc_labels() -> void:
+	var fallback_font: Font = ThemeDB.fallback_font
+	if fallback_font == null:
+		return
+
+	var nearest_npc := get_nearest_npc()
+	for npc in npc_data:
+		var screen_x := float(npc["x"]) - camera_x
+		if screen_x < -160.0 or screen_x > VIEW_WIDTH + 160.0:
+			continue
+
+		var feet_y := float(npc["feet_y"])
+		var color := Color(String(npc["color"]))
+		var is_near := not nearest_npc.is_empty() and String(nearest_npc["id"]) == String(npc["id"])
+		var label_y := feet_y - float(npc["label_height"]) - 32.0
+
+		if is_near:
+			draw_arc(Vector2(screen_x, feet_y + 10.0), 26.0, 0.0, TAU, 28, color.lightened(0.3), 3.0)
+
+		draw_string(
+			fallback_font,
+			Vector2(screen_x - 96.0, label_y),
+			String(npc["label"]),
+			HORIZONTAL_ALIGNMENT_LEFT,
+			192.0,
+			18,
+			color.lightened(0.25 if is_near else 0.05)
+		)
+
+
 func _draw_spot_markers() -> void:
 	var fallback_font: Font = ThemeDB.fallback_font
 	if fallback_font == null:
@@ -387,6 +562,51 @@ func _draw_spot_markers() -> void:
 			18,
 			color.lightened(0.3)
 		)
+
+
+func _build_npcs() -> void:
+	npc_data.clear()
+	for definition in NPC_DEFINITIONS:
+		var npc_root := Node2D.new()
+		npc_layer.add_child(npc_root)
+
+		var sprite := AnimatedSprite2D.new()
+		sprite.centered = true
+		npc_root.add_child(sprite)
+
+		var tile_name := String(definition["tile"])
+		sprite.sprite_frames = npc_animation_sets[tile_name]
+		sprite.animation = "loop"
+		sprite.play()
+
+		var metrics: Dictionary = NPC_TILE_METRICS.get(tile_name, {})
+		var scale_value := float(definition["scale"])
+		var y_offset := NPC_REFERENCE_CONTENT_HEIGHT
+		var x_offset := 0.0
+		if not metrics.is_empty():
+			scale_value *= NPC_REFERENCE_CONTENT_HEIGHT / float(metrics["content_height"])
+			var frame_center_x := float(metrics["frame_width"]) * 0.5
+			var frame_center_y := float(metrics["frame_height"]) * 0.5
+			var content_center_x := (float(metrics["content_left"]) + float(metrics["content_right"])) * 0.5
+			x_offset = (content_center_x - frame_center_x) * scale_value
+			y_offset = (float(metrics["content_bottom"]) - frame_center_y) * scale_value
+
+		var should_flip := int(definition["facing"]) > 0
+		sprite.flip_h = should_flip
+		sprite.scale = Vector2.ONE * scale_value
+		sprite.position = Vector2(x_offset if should_flip else -x_offset, -y_offset)
+
+		var npc_x := world_width * float(definition["world_ratio"])
+		var npc_feet_y := BASE_GROUND_Y + float(definition["feet_offset"])
+		npc_root.position = Vector2(npc_x, npc_feet_y)
+
+		var npc: Dictionary = definition.duplicate(true)
+		npc["root"] = npc_root
+		npc["sprite"] = sprite
+		npc["x"] = npc_x
+		npc["feet_y"] = npc_feet_y
+		npc["label_height"] = y_offset
+		npc_data.append(npc)
 
 
 func _get_horizontal_input() -> float:
@@ -424,10 +644,13 @@ func _update_hud() -> void:
 	subtitle_label.text = _get_guide_text()
 
 	var nearest := get_nearest_spot()
+	var nearest_npc := get_nearest_npc()
 	if interaction_timer > 0.0:
 		prompt_label.text = interaction_message
 	elif not nearest.is_empty():
 		prompt_label.text = "Press E or Space to check out %s." % String(nearest["label"])
+	elif not nearest_npc.is_empty():
+		prompt_label.text = String(nearest_npc["description"])
 	else:
 		prompt_label.text = interaction_message
 

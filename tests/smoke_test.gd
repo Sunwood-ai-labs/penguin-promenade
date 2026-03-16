@@ -42,6 +42,12 @@ func _initialize() -> void:
 	if main.spot_data.size() != 3:
 		push_error("Expected 3 city spots, got %d" % main.spot_data.size())
 		exit_code = 1
+	if main.npc_data.size() != main.NPC_DEFINITIONS.size():
+		push_error("Expected %d town NPCs, got %d" % [main.NPC_DEFINITIONS.size(), main.npc_data.size()])
+		exit_code = 1
+	if main.npc_animation_sets.size() < 4:
+		push_error("Expected multiple NPC animation sets to be loaded.")
+		exit_code = 1
 
 	var start_x: float = main.player_world_x
 	main.set_move_input(1.0)
@@ -77,6 +83,17 @@ func _initialize() -> void:
 	main.clear_move_input()
 	main.simulate(0.1)
 	await process_frame
+
+	var first_npc: Dictionary = main.npc_data[0]
+	main.move_player_to(float(first_npc["x"]))
+	await process_frame
+	var nearest_npc: Dictionary = main.get_nearest_npc()
+	if nearest_npc.is_empty():
+		push_error("Expected to detect a nearby town NPC.")
+		exit_code = 1
+	elif String(nearest_npc["id"]) != String(first_npc["id"]):
+		push_error("Nearest NPC should match the NPC at the player's position.")
+		exit_code = 1
 
 	var first_spot: Dictionary = main.spot_data[0]
 	main.move_player_to(float(first_spot["x"]))
