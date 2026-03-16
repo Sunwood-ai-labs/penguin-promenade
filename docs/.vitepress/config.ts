@@ -13,6 +13,10 @@ const englishSidebar = [
       { text: "Troubleshooting", link: "/guide/troubleshooting" },
     ],
   },
+  {
+    text: "Releases",
+    items: [{ text: "v0.1.0", link: "/guide/releases/v0.1.0" }],
+  },
 ];
 
 const japaneseSidebar = [
@@ -20,10 +24,14 @@ const japaneseSidebar = [
     text: "ガイド",
     items: [
       { text: "はじめに", link: "/ja/guide/getting-started" },
-      { text: "遊び方", link: "/ja/guide/gameplay" },
+      { text: "ゲームプレイ", link: "/ja/guide/gameplay" },
       { text: "開発", link: "/ja/guide/development" },
-      { text: "トラブルシュート", link: "/ja/guide/troubleshooting" },
+      { text: "トラブルシューティング", link: "/ja/guide/troubleshooting" },
     ],
+  },
+  {
+    text: "リリース",
+    items: [{ text: "v0.1.0", link: "/ja/guide/releases/v0.1.0" }],
   },
 ];
 
@@ -64,9 +72,7 @@ export default defineConfig({
         search: {
           provider: "local",
         },
-        socialLinks: [
-          { icon: "github", link: githubUrl },
-        ],
+        socialLinks: [{ icon: "github", link: githubUrl }],
         editLink: {
           pattern: `${githubUrl}/edit/main/docs/:path`,
           text: "Edit this page on GitHub",
@@ -82,7 +88,8 @@ export default defineConfig({
       lang: "ja-JP",
       link: "/ja/",
       title: "Penguin Promenade",
-      description: "Godot と Codex App で作った CLI-first な実験的街歩きゲーム。",
+      description:
+        "Godot と Codex App で構築した CLI-first な横スクロール散歩ゲーム。",
       themeConfig: {
         logo: "/icon.svg",
         nav: [
@@ -96,9 +103,7 @@ export default defineConfig({
         search: {
           provider: "local",
         },
-        socialLinks: [
-          { icon: "github", link: githubUrl },
-        ],
+        socialLinks: [{ icon: "github", link: githubUrl }],
         editLink: {
           pattern: `${githubUrl}/edit/main/docs/:path`,
           text: "GitHub でこのページを編集",
@@ -115,7 +120,7 @@ export default defineConfig({
         lightModeSwitchTitle: "ライトモード",
         darkModeSwitchTitle: "ダークモード",
         footer: {
-          message: "Godot と animated WebP と Codex App で組み上げた実験作です。",
+          message: "Godot と animated WebP と Codex App でまとめた実験的な公開プロトタイプです。",
           copyright: "MIT License",
         },
       },
