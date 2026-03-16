@@ -6,25 +6,25 @@ const REPO_NAME_TEXT := "penguin-promenade"
 const TITLE_TEXT := "Penguin Promenade"
 const EYEBROW_TEXT := "Release Notes"
 const VERSION_TEXT := "v0.1.0"
-const TAGLINE_TEXT := "CLI-first city stroll built in Godot with animated penguin WebP characters."
-const DETAIL_TEXT := "First public release with the promenade loop, ambient town residents, and reproducible docs plus smoke-test tooling."
+const TAGLINE_TEXT := "CLI-first Godot city stroll."
+const DETAIL_TEXT := "Animated penguins. Sunset avenue. First public release."
 const HERO_RUN_DIR := "res://assets/player_frames/run"
 const HERO_WAVE_DIR := "res://assets/tiles_frames/tile_05"
 const HERO_IDLE_DIR := "res://assets/tiles_frames/tile_09"
 const FEATURE_ITEMS := [
 	{
 		"title": "Playable Avenue",
-		"body": "Walk the sunset street, follow the HUD, and visit the first three landmarks.",
+		"body": "Side-scrolling sunset walk.",
 		"accent": "8be9fd",
 	},
 	{
 		"title": "Animated Town Cast",
-		"body": "The release turns the remaining WebP clips into smaller looping residents across the block.",
+		"body": "Small looping penguins fill the block.",
 		"accent": "fde68a",
 	},
 	{
 		"title": "CLI-first Build",
-		"body": "Smoke tests, docs, and asset measurement scripts are all ready to run from the repo.",
+		"body": "Docs and smoke-test tooling included.",
 		"accent": "93c5fd",
 	},
 ]
@@ -73,14 +73,14 @@ func _build_scene() -> void:
 	version_margin.add_child(version_label)
 
 	var glow := Panel.new()
-	glow.position = Vector2(732.0, 266.0)
-	glow.size = Vector2(528.0, 392.0)
+	glow.position = Vector2(732.0, 248.0)
+	glow.size = Vector2(528.0, 374.0)
 	glow.add_theme_stylebox_override("panel", _style_box(Color("10233d7c"), Color("54b6ff44"), 28))
 	add_child(glow)
 
 	var hero_shadow := Panel.new()
-	hero_shadow.position = Vector2(780.0, 628.0)
-	hero_shadow.size = Vector2(470.0, 72.0)
+	hero_shadow.position = Vector2(802.0, 602.0)
+	hero_shadow.size = Vector2(430.0, 56.0)
 	hero_shadow.add_theme_stylebox_override("panel", _style_box(Color("020617a8"), Color("00000000"), 36))
 	add_child(hero_shadow)
 
@@ -89,8 +89,8 @@ func _build_scene() -> void:
 
 	hero_sprite = AnimatedSprite2D.new()
 	hero_sprite.centered = true
-	hero_sprite.position = Vector2(1070.0, 560.0)
-	hero_sprite.scale = Vector2.ONE * 1.56
+	hero_sprite.position = Vector2(1060.0, 522.0)
+	hero_sprite.scale = Vector2.ONE * 1.38
 	hero_sprite.flip_h = true
 	hero_sprite.sprite_frames = _build_sprite_frames_from_dir(HERO_RUN_DIR, 6.4)
 	hero_sprite.animation = "loop"
@@ -99,8 +99,8 @@ func _build_scene() -> void:
 
 	accent_wave_sprite = AnimatedSprite2D.new()
 	accent_wave_sprite.centered = true
-	accent_wave_sprite.position = Vector2(858.0, 560.0)
-	accent_wave_sprite.scale = Vector2.ONE * 0.98
+	accent_wave_sprite.position = Vector2(858.0, 528.0)
+	accent_wave_sprite.scale = Vector2.ONE * 0.86
 	accent_wave_sprite.flip_h = true
 	accent_wave_sprite.sprite_frames = _build_sprite_frames_from_dir(HERO_WAVE_DIR, 4.5)
 	accent_wave_sprite.animation = "loop"
@@ -109,8 +109,8 @@ func _build_scene() -> void:
 
 	accent_idle_sprite = AnimatedSprite2D.new()
 	accent_idle_sprite.centered = true
-	accent_idle_sprite.position = Vector2(1240.0, 586.0)
-	accent_idle_sprite.scale = Vector2.ONE * 0.88
+	accent_idle_sprite.position = Vector2(1224.0, 548.0)
+	accent_idle_sprite.scale = Vector2.ONE * 0.76
 	accent_idle_sprite.flip_h = true
 	accent_idle_sprite.modulate = Color("f8fafce0")
 	accent_idle_sprite.sprite_frames = _build_sprite_frames_from_dir(HERO_IDLE_DIR, 4.0)
@@ -120,7 +120,7 @@ func _build_scene() -> void:
 
 	var card := PanelContainer.new()
 	card.position = Vector2(56.0, 54.0)
-	card.size = Vector2(638.0, 634.0)
+	card.size = Vector2(638.0, 566.0)
 	card.add_theme_stylebox_override("panel", _style_box(Color("07111ce6"), Color("7dd3fc4d"), 32))
 	add_child(card)
 
@@ -135,7 +135,7 @@ func _build_scene() -> void:
 	var layout := VBoxContainer.new()
 	layout.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	layout.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	layout.add_theme_constant_override("separation", 18)
+	layout.add_theme_constant_override("separation", 14)
 	content.add_child(layout)
 
 	var badge_row := HBoxContainer.new()
@@ -153,7 +153,7 @@ func _build_scene() -> void:
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	layout.add_child(title)
 
-	var subtitle := _make_label(TAGLINE_TEXT, 22, Color("dbeafe"))
+	var subtitle := _make_label(TAGLINE_TEXT, 24, Color("dbeafe"))
 	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	layout.add_child(subtitle)
 
@@ -162,14 +162,11 @@ func _build_scene() -> void:
 	layout.add_child(detail)
 
 	var feature_column := VBoxContainer.new()
-	feature_column.add_theme_constant_override("separation", 10)
+	feature_column.add_theme_constant_override("separation", 8)
 	layout.add_child(feature_column)
 
 	for feature in FEATURE_ITEMS:
 		feature_column.add_child(_feature_card(String(feature["title"]), String(feature["body"]), Color(String(feature["accent"]))))
-
-	var footer := _make_label("Rendered in Godot for the v0.1.0 release notes image.", 16, Color("93c5fd"))
-	layout.add_child(footer)
 
 
 func _configure_backdrop() -> void:
@@ -224,7 +221,7 @@ func _badge(text: String, text_color: Color, fill_color: Color) -> PanelContaine
 
 func _feature_card(title: String, body: String, accent: Color) -> PanelContainer:
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(0.0, 98.0)
+	panel.custom_minimum_size = Vector2(0.0, 82.0)
 	panel.add_theme_stylebox_override("panel", _style_box(Color("0d1828f0"), accent.darkened(0.25), 22))
 
 	var margin := MarginContainer.new()
@@ -236,12 +233,12 @@ func _feature_card(title: String, body: String, accent: Color) -> PanelContainer
 	panel.add_child(margin)
 
 	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 6)
+	column.add_theme_constant_override("separation", 4)
 	margin.add_child(column)
 
-	column.add_child(_make_label(title, 22, accent.lightened(0.12)))
+	column.add_child(_make_label(title, 20, accent.lightened(0.12)))
 
-	var body_label := _make_label(body, 16, Color("d9e5f4"))
+	var body_label := _make_label(body, 15, Color("d9e5f4"))
 	body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(body_label)
 
