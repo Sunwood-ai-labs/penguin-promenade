@@ -56,18 +56,27 @@ npm ci
 npm run docs:build
 ```
 
+Render the `v0.1.0` release-note header image in Godot:
+
+```powershell
+<Path-To-Godot>\Godot_v4.6.1-stable_win64.exe --path . --script res://tests/capture_release_notes_header.gd
+```
+
 ## Project Layout
 
 - `project.godot`: Godot project entrypoint and viewport configuration
 - `scenes/main.tscn`: main playable scene
 - `scripts/main.gd`: city stroll gameplay, animation wiring, NPC spawning, and HUD logic
 - `tests/smoke_test.gd`: headless regression check for movement, interactions, facing, and NPC scaling
+- `tests/capture_release_notes_header.gd`: headless export for the `v0.1.0` release-note header image
 - `tools/measure_animation_metrics.py`: `uv` helper for measuring visible sprite bounds
 - `assets/backgrounds/city.png`: skyline backdrop adapted for the promenade
 - `assets/player/run_animated.webp`: dedicated player walking animation source
 - `assets/player_frames/run/`: extracted PNG frames for the walking loop
 - `assets/tiles/`: original animated WebP clips used for idle, action, and NPC material
 - `assets/tiles_frames/`: extracted PNG sequences used at runtime
+- `scenes/release_notes_header.tscn`: dedicated Godot composition scene for release-note artwork
+- `scripts/release_notes_header.gd`: layout and animation wiring for the release-note header page
 - `docs/`: VitePress documentation site and static media
 
 ## Asset Notes
