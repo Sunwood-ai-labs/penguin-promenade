@@ -751,10 +751,15 @@ func _build_sprite_frames_from_dir(frame_dir: String, speed: float = 12.0, loop:
 
 func _load_texture_from_image(path: String) -> Texture2D:
 	var texture := load(path) as Texture2D
-	if texture == null:
-		push_error("Failed to load image: %s" % path)
-		return ImageTexture.create_from_image(Image.create(8, 8, false, Image.FORMAT_RGBA8))
-	return texture
+	if texture != null:
+		return texture
+
+	var image := Image.new()
+	if image.load(path) == OK:
+		return ImageTexture.create_from_image(image)
+
+	push_error("Failed to load image: %s" % path)
+	return ImageTexture.create_from_image(Image.create(8, 8, false, Image.FORMAT_RGBA8))
 
 
 func _set_player_state(next_state: String) -> void:
