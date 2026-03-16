@@ -276,10 +276,10 @@ func _build_sprite_frames_from_dir(frame_dir: String, speed: float) -> SpriteFra
 	file_names.sort()
 
 	for frame_name in file_names:
-		var image := Image.new()
-		if image.load("%s/%s" % [frame_dir, frame_name]) != OK:
+		var texture := load("%s/%s" % [frame_dir, frame_name]) as Texture2D
+		if texture == null:
 			push_error("Failed to load frame: %s/%s" % [frame_dir, frame_name])
 			continue
-		frames.add_frame("loop", ImageTexture.create_from_image(image))
+		frames.add_frame("loop", texture)
 
 	return frames

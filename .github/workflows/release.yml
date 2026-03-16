@@ -1,0 +1,140 @@
+name: Release Build
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release tag to upload assets to. Leave empty to only build artifacts.
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.release.tag_name || github.event.inputs.release_tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  GODOT_VERSION: 4.6.1
+  GODOT_STATUS: stable
+  RELEASE_NAME: PenguinPromenade
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine release metadata
+        id: meta
+        shell: pwsh
+        run: |
+          $tag = "${{ github.event.release.tag_name }}"
+          if ([string]::IsNullOrWhiteSpace($tag)) {
+            $tag = "${{ github.event.inputs.release_tag }}"
+          }
+          if ([string]::IsNullOrWhiteSpace($tag)) {
+            $tag = "manual-${{ github.run_number }}"
+          }
+
+          $safeTag = $tag -replace '[^0-9A-Za-z._-]', '-'
+          $assetBase = "${env:RELEASE_NAME}-${safeTag}-windows-x86_64"
+          $exportDir = Join-Path $PWD "dist\release\windows"
+          $archivePath = Join-Path $PWD "dist\$assetBase.zip"
+          $checksumPath = Join-Path $PWD "dist\SHA256SUMS.txt"
+          $headerPath = Join-Path $PWD "docs\public\images\releases\$tag-header.png"
+
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "asset_base=$assetBase" >> $env:GITHUB_OUTPUT
+          "export_dir=$exportDir" >> $env:GITHUB_OUTPUT
+          "archive_path=$archivePath" >> $env:GITHUB_OUTPUT
+          "checksum_path=$checksumPath" >> $env:GITHUB_OUTPUT
+          "header_path=$headerPath" >> $env:GITHUB_OUTPUT
+
+      - name: Download Godot editor
+        shell: pwsh
+        run: |
+          $editorZip = Join-Path $PWD "godot-editor.zip"
+          curl.exe -L "https://downloads.godotengine.org/?version=${env:GODOT_VERSION}&flavor=${env:GODOT_STATUS}&slug=win64.exe.zip&platform=windows.64" -o $editorZip
+          Expand-Archive -Path $editorZip -DestinationPath (Join-Path $PWD "godot-editor")
+
+      - name: Download export templates
+        shell: pwsh
+        run: |
+          $templatesArchive = Join-Path $PWD "godot-export-templates.tpz"
+          $templatesZip = Join-Path $PWD "godot-export-templates.zip"
+          $extractRoot = Join-Path $PWD "godot-export-templates"
+          $targetRoot = Join-Path $env:APPDATA "Godot\export_templates\${env:GODOT_VERSION}.${env:GODOT_STATUS}"
+
+          curl.exe -L "https://downloads.godotengine.org/?version=${env:GODOT_VERSION}&flavor=${env:GODOT_STATUS}&slug=export_templates.tpz&platform=templates" -o $templatesArchive
+          Copy-Item $templatesArchive $templatesZip
+          Expand-Archive -Path $templatesZip -DestinationPath $extractRoot
+
+          New-Item -ItemType Directory -Force -Path $targetRoot | Out-Null
+          Copy-Item (Join-Path $extractRoot "templates\*") $targetRoot -Recurse -Force
+
+      - name: Run smoke test
+        shell: pwsh
+        run: |
+          $godot = Join-Path $PWD "godot-editor\Godot_v${env:GODOT_VERSION}-${env:GODOT_STATUS}_win64_console.exe"
+          & $godot --headless --path $PWD --script res://tests/smoke_test.gd
+
+      - name: Export Windows build
+        shell: pwsh
+        run: |
+          $godot = Join-Path $PWD "godot-editor\Godot_v${env:GODOT_VERSION}-${env:GODOT_STATUS}_win64_console.exe"
+          New-Item -ItemType Directory -Force -Path "${{ steps.meta.outputs.export_dir }}" | Out-Null
+          & $godot --headless --path $PWD --export-release "Windows Desktop" "${{ steps.meta.outputs.export_dir }}\${env:RELEASE_NAME}.exe"
+
+      - name: Package release bundle
+        shell: pwsh
+        run: |
+          $exportDir = "${{ steps.meta.outputs.export_dir }}"
+          $archivePath = "${{ steps.meta.outputs.archive_path }}"
+          $checksumPath = "${{ steps.meta.outputs.checksum_path }}"
+          $stagingDir = Join-Path $PWD "dist\package"
+
+          if (Test-Path $stagingDir) {
+            Remove-Item $stagingDir -Recurse -Force
+          }
+
+          New-Item -ItemType Directory -Force -Path $stagingDir | Out-Null
+          Copy-Item "$exportDir\*" $stagingDir -Recurse -Force
+          Copy-Item README.md, LICENSE $stagingDir -Force
+
+          if (Test-Path $archivePath) {
+            Remove-Item $archivePath -Force
+          }
+
+          Compress-Archive -Path (Join-Path $stagingDir "*") -DestinationPath $archivePath -CompressionLevel Optimal
+          $hash = (Get-FileHash $archivePath -Algorithm SHA256).Hash.ToLower()
+          "$hash  $([System.IO.Path]::GetFileName($archivePath))" | Set-Content $checksumPath
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.asset_base }}
+          path: |
+            ${{ steps.meta.outputs.archive_path }}
+            ${{ steps.meta.outputs.checksum_path }}
+          if-no-files-found: error
+
+      - name: Upload assets to GitHub release
+        if: github.event_name == 'release' || github.event.inputs.release_tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.meta.outputs.tag }}"
+          gh release upload $tag "${{ steps.meta.outputs.archive_path }}" "${{ steps.meta.outputs.checksum_path }}" --clobber
+
+          $headerPath = "${{ steps.meta.outputs.header_path }}"
+          if (Test-Path $headerPath) {
+            gh release upload $tag $headerPath --clobber
+          }

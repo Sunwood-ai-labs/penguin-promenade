@@ -62,6 +62,8 @@ Render the `v0.1.0` release-note header image in Godot:
 <Path-To-Godot>\Godot_v4.6.1-stable_win64.exe --path . --script res://tests/capture_release_notes_header.gd
 ```
 
+Publish a GitHub release to trigger the Windows build and attach a zipped release bundle automatically.
+
 ## Project Layout
 
 - `project.godot`: Godot project entrypoint and viewport configuration
@@ -70,6 +72,7 @@ Render the `v0.1.0` release-note header image in Godot:
 - `tests/smoke_test.gd`: headless regression check for movement, interactions, facing, and NPC scaling
 - `tests/capture_release_notes_header.gd`: headless export for the `v0.1.0` release-note header image
 - `tools/measure_animation_metrics.py`: `uv` helper for measuring visible sprite bounds
+- `export_presets.cfg`: Godot export preset used by CI/CD release builds
 - `assets/backgrounds/city.png`: skyline backdrop adapted for the promenade
 - `assets/player/run_animated.webp`: dedicated player walking animation source
 - `assets/player_frames/run/`: extracted PNG frames for the walking loop
@@ -78,6 +81,7 @@ Render the `v0.1.0` release-note header image in Godot:
 - `scenes/release_notes_header.tscn`: dedicated Godot composition scene for release-note artwork
 - `scripts/release_notes_header.gd`: layout and animation wiring for the release-note header page
 - `docs/`: VitePress documentation site and static media
+- `.github/workflows/release.yml`: GitHub Actions release pipeline that exports and uploads the Windows build
 
 ## Asset Notes
 

@@ -1,7 +1,11 @@
 .godot/
 .import/
 .tools/
+.tmp/
 .venv/
+dist/
+*.import
+*.uid
 docs/node_modules/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
