@@ -48,6 +48,10 @@ features:
     <img src="/images/preview-interact.png" alt="Interacting near a landmark" />
     <figcaption>Landmarks trigger different penguin poses, and nearby NPCs add a little motion and atmosphere to the street.</figcaption>
   </figure>
+  <figure>
+    <img src="/images/preview-npc.png" alt="Animated town penguins along the avenue" />
+    <figcaption>Smaller town residents vary their placement and scale a little so each stroll feels alive without becoming chaotic.</figcaption>
+  </figure>
 </div>
 
 ## Repository Goals

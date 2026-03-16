@@ -4,6 +4,20 @@
 
 Penguin Promenade is a small side-scrolling walk rather than a challenge-heavy platformer. The goal is simply to drift through the city, approach the next glowing landmark, and trigger a short response animation or observation.
 
+## Screenshots
+
+![Walking through the avenue](/images/preview-walk.png)
+
+The promenade loop is built around a calm side-scroll pace, a skyline backdrop, and a HUD that nudges you toward the next point of interest.
+
+![Interacting at a landmark](/images/preview-interact.png)
+
+Each landmark triggers a dedicated pose so the player animation changes as you move through the short route.
+
+![Meeting the town penguins](/images/preview-npc.png)
+
+The remaining WebP clips become smaller randomized residents that keep the street moving around you.
+
 ## Landmarks
 
 - `Sun Cafe`: a warm intro stop near the west side of the avenue

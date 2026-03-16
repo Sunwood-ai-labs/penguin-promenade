@@ -18,6 +18,20 @@ Animated penguin WebP clips become the player, ambient NPCs, and landmark intera
 - Ships with a headless Godot smoke test so the core promenade loop stays verifiable in CI.
 - Includes `uv`-managed Python utilities for measuring visible animation bounds and keeping sprite scale alignment sane.
 
+## Gameplay Gallery
+
+![Walking along the avenue](docs/public/images/preview-walk.png)
+
+Walk through the looping sunset street while the HUD points you toward the next landmark.
+
+![Interacting at a landmark](docs/public/images/preview-interact.png)
+
+Pause near a glowing stop to trigger a different penguin pose and a short interaction beat.
+
+![Animated town penguins](docs/public/images/preview-npc.png)
+
+Smaller randomized residents wander the block so the city feels alive even between landmarks.
+
 ## Play
 
 1. Install Godot `4.6.1` on Windows.
