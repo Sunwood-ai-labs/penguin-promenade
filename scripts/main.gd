@@ -23,7 +23,13 @@ const LOOK_ANIMATION_FPS := 4.5
 const WAVE_ANIMATION_FPS := 5.5
 const NPC_ANIMATION_FPS := 4.6
 const NPC_INTEREST_RADIUS := 170.0
-const NPC_REFERENCE_CONTENT_HEIGHT := 188.0
+const NPC_REFERENCE_CONTENT_HEIGHT := 154.0
+const NPC_X_JITTER := 88.0
+const NPC_FOOT_JITTER := 8.0
+const NPC_SCALE_VARIATION_MIN := 0.8
+const NPC_SCALE_VARIATION_MAX := 0.94
+const NPC_SPEED_SCALE_MIN := 0.9
+const NPC_SPEED_SCALE_MAX := 1.1
 const PLAYER_STATE_METRICS := {
 	"walk": {
 		"frame_width": 560.0,
@@ -208,6 +214,7 @@ var player_state_scales: Dictionary = {}
 var player_state_y_offsets: Dictionary = {}
 var player_state_x_offsets: Dictionary = {}
 var npc_animation_sets: Dictionary = {}
+var rng := RandomNumberGenerator.new()
 var background_texture: Texture2D
 var background_span := 0.0
 var world_width := VIEW_WIDTH
@@ -240,6 +247,7 @@ var debug_horizontal_input := 0.0
 
 
 func _ready() -> void:
+	rng.randomize()
 	_load_assets()
 	_build_scene()
 	_reset_state()
@@ -577,12 +585,17 @@ func _build_npcs() -> void:
 		var tile_name := String(definition["tile"])
 		sprite.sprite_frames = npc_animation_sets[tile_name]
 		sprite.animation = "loop"
+		sprite.speed_scale = rng.randf_range(NPC_SPEED_SCALE_MIN, NPC_SPEED_SCALE_MAX)
 		sprite.play()
+		var frame_count := sprite.sprite_frames.get_frame_count("loop")
+		if frame_count > 0:
+			sprite.frame = rng.randi_range(0, frame_count - 1)
 
 		var metrics: Dictionary = NPC_TILE_METRICS.get(tile_name, {})
-		var scale_value := float(definition["scale"])
+		var scale_value := float(definition["scale"]) * rng.randf_range(NPC_SCALE_VARIATION_MIN, NPC_SCALE_VARIATION_MAX)
 		var y_offset := NPC_REFERENCE_CONTENT_HEIGHT
 		var x_offset := 0.0
+		var render_height := NPC_REFERENCE_CONTENT_HEIGHT
 		if not metrics.is_empty():
 			scale_value *= NPC_REFERENCE_CONTENT_HEIGHT / float(metrics["content_height"])
 			var frame_center_x := float(metrics["frame_width"]) * 0.5
@@ -590,22 +603,32 @@ func _build_npcs() -> void:
 			var content_center_x := (float(metrics["content_left"]) + float(metrics["content_right"])) * 0.5
 			x_offset = (content_center_x - frame_center_x) * scale_value
 			y_offset = (float(metrics["content_bottom"]) - frame_center_y) * scale_value
+			render_height = float(metrics["content_height"]) * scale_value
 
-		var should_flip := int(definition["facing"]) > 0
+		var facing_direction := int(definition["facing"])
+		if rng.randf() < 0.4:
+			facing_direction *= -1
+		var should_flip := facing_direction > 0
 		sprite.flip_h = should_flip
 		sprite.scale = Vector2.ONE * scale_value
 		sprite.position = Vector2(x_offset if should_flip else -x_offset, -y_offset)
 
-		var npc_x := world_width * float(definition["world_ratio"])
-		var npc_feet_y := BASE_GROUND_Y + float(definition["feet_offset"])
+		var base_x := world_width * float(definition["world_ratio"])
+		var npc_x := clampf(base_x + rng.randf_range(-NPC_X_JITTER, NPC_X_JITTER), 90.0, world_width - 90.0)
+		var base_feet_y := BASE_GROUND_Y + float(definition["feet_offset"])
+		var npc_feet_y := base_feet_y + rng.randf_range(-NPC_FOOT_JITTER, NPC_FOOT_JITTER)
 		npc_root.position = Vector2(npc_x, npc_feet_y)
 
 		var npc: Dictionary = definition.duplicate(true)
 		npc["root"] = npc_root
 		npc["sprite"] = sprite
+		npc["base_x"] = base_x
+		npc["base_feet_y"] = base_feet_y
 		npc["x"] = npc_x
 		npc["feet_y"] = npc_feet_y
 		npc["label_height"] = y_offset
+		npc["render_height"] = render_height
+		npc["effective_scale"] = scale_value
 		npc_data.append(npc)
 
 

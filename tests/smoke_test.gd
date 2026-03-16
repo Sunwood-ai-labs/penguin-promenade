@@ -48,6 +48,17 @@ func _initialize() -> void:
 	if main.npc_animation_sets.size() < 4:
 		push_error("Expected multiple NPC animation sets to be loaded.")
 		exit_code = 1
+	var player_walk_height: float = main.PLAYER_REFERENCE_CONTENT_HEIGHT * float(main.player_state_scales["walk"])
+	for npc in main.npc_data:
+		if float(npc["render_height"]) >= player_walk_height:
+			push_error("Town NPCs should render smaller than the player.")
+			exit_code = 1
+		if absf(float(npc["x"]) - float(npc["base_x"])) > main.NPC_X_JITTER + 0.01:
+			push_error("Town NPC x jitter exceeded the configured range.")
+			exit_code = 1
+		if absf(float(npc["feet_y"]) - float(npc["base_feet_y"])) > main.NPC_FOOT_JITTER + 0.01:
+			push_error("Town NPC foot jitter exceeded the configured range.")
+			exit_code = 1
 
 	var start_x: float = main.player_world_x
 	main.set_move_input(1.0)
